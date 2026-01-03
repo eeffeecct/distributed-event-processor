@@ -1,0 +1,6 @@
+rootProject.name = 'distributed-event-processor'
+
+include 'common-lib'
+include 'collector-service'
+include 'sql-service'
+include 'mongo-service'

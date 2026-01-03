@@ -1,0 +1,14 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: collector-service
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: user
+    password: password
+
+external:
+  events-url: http://161.97.101.10:9797/events

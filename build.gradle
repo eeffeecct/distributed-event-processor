@@ -1,0 +1,50 @@
+plugins {
+    id 'org.springframework.boot' version '3.5.6' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+    id 'java'
+    id 'org.sonarqube' version '7.2.2.6593'
+}
+
+allprojects {
+    group = 'ru.demo'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok:1.18.42'
+        annotationProcessor 'org.projectlombok:lombok:1.18.42'
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        testLogging {
+           showStandardStreams = true
+           events "passed", "skipped", "failed"
+        }
+    }
+}
+
+sonar {
+    properties {
+        property "sonar.projectKey", "lesson67_hw_eeffeecct"
+        property "sonar.projectName", "lesson67_hw_eeffeecct"
+        property "sonar.host.url", "http://84.247.180.194:9000"
+    }
+}

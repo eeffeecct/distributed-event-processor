@@ -1,0 +1,20 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: mongo-service
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: user
+    password: password
+
+  data:
+    mongodb:
+      host: ${MONGO_HOST:localhost}
+      port: 27017
+      database: events_mongo_db
+      username: user
+      password: password
+      authentication-database: admin

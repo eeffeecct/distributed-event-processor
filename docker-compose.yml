@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: event-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events_db
+    restart: always
+
+  mongo:
+    image: mongo:6.0
+    container_name: event-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: event-rabbitmq
+    ports:
+      - "5672:5672"   # Порт для приложений (Java)
+      - "15672:15672" # Порт для веб-админки (в браузере)
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    restart: always

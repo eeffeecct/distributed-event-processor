@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS events (
+    uuid VARCHAR(255) PRIMARY KEY,
+    event_time TIMESTAMP,
+    sql_saved_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

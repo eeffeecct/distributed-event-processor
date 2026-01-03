@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: event-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events_db
+    restart: always
+
+  mongo:
+    image: mongo:6.0
+    container_name: event-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: event-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    restart: always
+
+
+  collector-service:
+    build: ./collector-service
+    container_name: java-collector
+    environment:
+      - RABBIT_HOST=event-rabbitmq
+      - MONGO_HOST=event-mongo
+    depends_on:
+      - rabbitmq
+    restart: always
+
+  sql-service:
+    build: ./sql-service
+    container_name: java-sql
+    environment:
+      - RABBIT_HOST=event-rabbitmq
+      - DB_HOST=event-postgres
+      - SPRING_SQL_INIT_MODE=always
+    depends_on:
+      - rabbitmq
+      - postgres
+    restart: always
+
+  mongo-service:
+    build: ./mongo-service
+    container_name: java-mongo
+    environment:
+      - RABBIT_HOST=event-rabbitmq
+      - SPRING_DATA_MONGODB_HOST=event-mongo
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_USERNAME=user
+      - SPRING_DATA_MONGODB_PASSWORD=password
+      - SPRING_DATA_MONGODB_DATABASE=events_db
+      - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
+    depends_on:
+      - rabbitmq
+      - mongo
+    restart: always

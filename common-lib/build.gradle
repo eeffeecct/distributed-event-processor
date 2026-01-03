@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.6"
+    }
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.20'
+}
