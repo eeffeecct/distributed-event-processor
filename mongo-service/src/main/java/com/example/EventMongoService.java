@@ -14,19 +14,23 @@ public class EventMongoService {
 
     private final EventMongoRepository mongoRepository;
 
-    @RabbitListener(queues = "events.processed")
-    public void processProcessedEvent(EventDto eventDto) {
-        log.info("Mongo: получено событие {}", eventDto.getUuid());
+    @RabbitListener(queues = RabbitQueueConstants.QUEUE_PROCESSED_EVENTS)
+    public void processProcessedEvent(MongoEventMessage message) {
+        log.debug("Mongo: получено событие {}", message.getUuid());
 
-        EventDocument doc = new EventDocument();
-
-        doc.setUuid(eventDto.getUuid());
-        doc.setEventTime(eventDto.getEventTime());
-        doc.setSqlSavedAt(eventDto.getSqlSavedAt());
-        doc.setMongoSavedAt(LocalDateTime.now());
+        EventDocument doc = createDocument(message);
 
         mongoRepository.save(doc);
 
         log.info("Mongo: сохранено в архив {}", doc.getUuid());
+    }
+
+    private EventDocument createDocument(MongoEventMessage message) {
+        return EventDocument.builder()
+                .uuid(message.getUuid())
+                .eventTime(message.getEventTime())
+                .sqlSavedAt(message.getSqlSavedAt())
+                .mongoSavedAt(LocalDateTime.now())
+                .build();
     }
 }

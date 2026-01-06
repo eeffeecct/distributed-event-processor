@@ -11,6 +11,11 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: events_db
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d events_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo:
     image: mongo:6.0
@@ -21,6 +26,11 @@ services:
       MONGO_INITDB_ROOT_USERNAME: user
       MONGO_INITDB_ROOT_PASSWORD: password
     restart: always
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -32,16 +42,20 @@ services:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
     restart: always
-
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   collector-service:
     build: ./collector-service
     container_name: java-collector
     environment:
       - RABBIT_HOST=event-rabbitmq
-      - MONGO_HOST=event-mongo
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     restart: always
 
   sql-service:
@@ -52,8 +66,10 @@ services:
       - DB_HOST=event-postgres
       - SPRING_SQL_INIT_MODE=always
     depends_on:
-      - rabbitmq
-      - postgres
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     restart: always
 
   mongo-service:
@@ -61,13 +77,15 @@ services:
     container_name: java-mongo
     environment:
       - RABBIT_HOST=event-rabbitmq
-      - SPRING_DATA_MONGODB_HOST=event-mongo
+      - MONGO_HOST=event-mongo
       - SPRING_DATA_MONGODB_PORT=27017
       - SPRING_DATA_MONGODB_USERNAME=user
       - SPRING_DATA_MONGODB_PASSWORD=password
       - SPRING_DATA_MONGODB_DATABASE=events_db
       - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
     depends_on:
-      - rabbitmq
-      - mongo
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     restart: always

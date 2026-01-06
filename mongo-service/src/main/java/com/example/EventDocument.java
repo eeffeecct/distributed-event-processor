@@ -1,12 +1,15 @@
 package com.example;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 @Document(collection = "archived_events") // имя таблицы в mongo
+@NoArgsConstructor
+@AllArgsConstructor
 public class EventDocument {
     @Id
     private String uuid;

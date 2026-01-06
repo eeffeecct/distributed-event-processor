@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class EventDto {
+@AllArgsConstructor
+public class EventEntity {
     private String uuid;
     private LocalDateTime eventTime;
 }

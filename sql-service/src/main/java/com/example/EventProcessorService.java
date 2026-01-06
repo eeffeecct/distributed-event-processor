@@ -17,22 +17,38 @@ public class EventProcessorService {
     private final EventRepository eventRepository;
     private final RabbitTemplate rabbitTemplate;
 
-    // чтение очереди
-    @RabbitListener(queues = "events.raw")
     @Transactional
-    public void processEvent(EventDto event){
-        log.info("Получено событие: {}", event.getUuid());
+    @RabbitListener(queues = RabbitQueueConstants.QUEUE_RAW_EVENTS)
+    public void processEvent(EventDto incomingEvent) {
+        log.debug("Получено событие: {}", incomingEvent.getUuid());
 
-        int rows = eventRepository.save(event);
+        EventEntity entity = EventEntity.builder()  // из EntityDto в EventEntity для SQL
+                .uuid(incomingEvent.getUuid())
+                .eventTime(incomingEvent.getEventTime())
+                .build();
 
-        if (rows == 0) {
-            log.warn("Дубликат события: {}. Пропускаем.", event.getUuid());
+        int rowsInserted = eventRepository.save(entity);
+
+        if (rowsInserted == 0) {
+            log.warn("Дубликат события в Postgres: {}. Пропускаем отправку в Mongo.", incomingEvent.getUuid());
             return;
         }
 
-        event.setSqlSavedAt(LocalDateTime.now());
+        sendToAnalytics(incomingEvent);
+    }
 
-        rabbitTemplate.convertAndSend("events.processed", event); // отправка во вторую очередь к mongo
-        log.info("Отправлено в event.processed: {}", event.getUuid());
+    private void sendToAnalytics(EventDto savedEvent) {
+        LocalDateTime processedAt = LocalDateTime.now();    // Время сохранения в PostgreSQL
+
+        MongoEventMessage messageForMongo = new MongoEventMessage(
+                savedEvent.getUuid(),
+                savedEvent.getEventTime(),
+                processedAt
+        );
+
+        rabbitTemplate.convertAndSend(RabbitQueueConstants.QUEUE_PROCESSED_EVENTS, messageForMongo);
+
+        log.info("Событие {} сохранено в SQL в {} и отправлено в RabbitMQ",
+                savedEvent.getUuid(), processedAt);
     }
 }

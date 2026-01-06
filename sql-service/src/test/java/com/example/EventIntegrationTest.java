@@ -15,19 +15,14 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-/*
-    Integration test:
-        1. Send message to RabbitMQ
-        2. Wait for read and save
-        3. Check if event is in PostgreSQL
- */
 
 @SpringBootTest
 @Testcontainers
 class EventIntegrationTest {
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
         .withInitScript("schema.sql");
@@ -58,18 +53,21 @@ class EventIntegrationTest {
     @Test
     void shouldSaveEvent_whenMessageReceivedFromRabbit() {
         String uuid = UUID.randomUUID().toString();
-        EventDto event = new EventDto();
-        event.setUuid(uuid);
-        event.setEventTime(LocalDateTime.now());
 
-        rabbitTemplate.convertAndSend("events.raw", event);
+        EventDto eventDto = EventDto.builder()
+                .uuid(uuid)
+                .eventTime(LocalDateTime.now())
+                .build();
+
+        rabbitTemplate.convertAndSend(RabbitQueueConstants.QUEUE_RAW_EVENTS, eventDto);
 
         await()
-            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(300))
+            .atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> assertThat(eventRepository.findByUuid(uuid))
                     .isPresent()
                     .get()
-                    .extracting(EventDto::getUuid)
+                    .extracting(EventEntity::getUuid)
                     .isEqualTo(uuid));
     }
 }

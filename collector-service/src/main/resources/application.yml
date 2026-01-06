@@ -1,5 +1,6 @@
 server:
   port: 8081
+  shutdown: graceful
 
 spring:
   application:
@@ -9,6 +10,8 @@ spring:
     port: 5672
     username: user
     password: password
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 external:
   events-url: http://161.97.101.10:9797/events

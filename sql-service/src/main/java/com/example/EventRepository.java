@@ -17,7 +17,7 @@ public class EventRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public int save(EventDto event) {
+    public int save(EventEntity event) {
         String sql = """
                 INSERT INTO events (uuid, event_time)
                 VALUES (?, ?)
@@ -31,29 +31,20 @@ public class EventRepository {
         );
     }
 
-    public Optional<EventDto> findByUuid(String uuid) {
+    public Optional<EventEntity> findByUuid(String uuid) {
         String sql = "SELECT * FROM events WHERE uuid = ?";
-
         try {
-            EventDto event = jdbcTemplate.queryForObject(sql, eventRowMapper(), uuid);
+            EventEntity event = jdbcTemplate.queryForObject(sql, eventRowMapper(), uuid);
             return Optional.ofNullable(event);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
 
-    // маппер
-    private RowMapper<EventDto> eventRowMapper() {
-        return (rs, rowNum) -> {
-            EventDto dto = new EventDto();
-            dto.setUuid(rs.getString("uuid"));
-
-            Timestamp ts = rs.getTimestamp("event_time");
-            if (ts != null) {
-                dto.setEventTime(ts.toLocalDateTime());
-            }
-            return dto;
-        };
+    private RowMapper<EventEntity> eventRowMapper() {
+        return (rs, rowNum) -> EventEntity.builder()
+                .uuid(rs.getString("uuid"))
+                .eventTime(rs.getTimestamp("event_time").toLocalDateTime())
+                .build();
     }
-
 }

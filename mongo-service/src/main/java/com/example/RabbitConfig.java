@@ -12,7 +12,7 @@ public class RabbitConfig {
 
     @Bean
     public Queue processedQueue() {
-        return new Queue("events.processed", true);
+        return new Queue(RabbitQueueConstants.QUEUE_PROCESSED_EVENTS, true);
     }
 
     @Bean

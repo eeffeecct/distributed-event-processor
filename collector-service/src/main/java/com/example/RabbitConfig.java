@@ -11,7 +11,7 @@ import org.springframework.amqp.core.Queue;
 public class RabbitConfig {
     @Bean
     public Queue eventQueue() {
-        return new Queue("events.raw", true);
+        return new Queue(RabbitQueueConstants.QUEUE_RAW_EVENTS, true);
     }
 
     @Bean
