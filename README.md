@@ -38,8 +38,8 @@
 ### Локальный запуск
 1. Клонируйте проект и перейдите в нужную ветку:
    ```bash
-   git clone -b lesson67_hw_eeffeecct [https://github.com/isicju/java_course_2025.git](https://github.com/isicju/java_course_2025.git)
-   cd java_course_2025
+   git clone [https://github.com/eeffeecct/distributed-event-processor.git](https://github.com/eeffeecct/distributed-event-processor.git)
+   cd distributed-event-processor
 
 ```
 
