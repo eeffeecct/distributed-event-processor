@@ -45,7 +45,7 @@
 
 2. Соберите JAR-файлы:
 ```bash
-./gradlew clean build -x test
+./gradlew clean build (-x test)
 
 ```
 
